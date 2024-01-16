@@ -1,5 +1,6 @@
 package tests;
 
+import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import pages.HomePage;
@@ -22,6 +23,7 @@ public class TC01_Red_ToolTip_Dogrulama {
 
         MegaMenu megaMenu=new MegaMenu();
         megaMenu.redYazisiniVeGorunurlugunuDogrula();
+        Assert.assertTrue(false);
 
         closeDriver();
 
