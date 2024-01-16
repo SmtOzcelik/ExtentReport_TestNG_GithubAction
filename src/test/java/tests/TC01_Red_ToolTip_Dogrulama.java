@@ -23,7 +23,7 @@ public class TC01_Red_ToolTip_Dogrulama {
 
         MegaMenu megaMenu=new MegaMenu();
         megaMenu.redYazisiniVeGorunurlugunuDogrula();
-        Assert.assertTrue(false);
+
 
         closeDriver();
 
