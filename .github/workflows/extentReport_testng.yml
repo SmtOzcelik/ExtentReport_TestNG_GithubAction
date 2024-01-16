@@ -1,71 +1,80 @@
-name: Java CI with ExtentReports
+name: samet CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
+    name: Abeyis Test Ekibi
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 11 and Maven
-        uses: actions/setup-java@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
           java-version: '11'
-          maven-version: '3.8.1'
-
-      - name: Configure Git
-        run: |
-          git config --global user.email "smtab142790@gmail.com"
-          git config --global user.name "SmtOzcelik"
+          distribution: 'temurin'
+          cache: maven
 
       - name: Build with Maven
-        run: mvn -B clean install
+        run: mvn clean test
 
-      - name: Run Tests and Generate ExtentReports
-        run: mvn test
-
-      - name: Archive ExtentReports
-        uses: actions/upload-artifact@v2
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
         with:
-          name: extent-reports
-          path: raporlar
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
 
-  publish:
-    needs: build
+      - name: Generate Extent Reports
+        run: mvn site
+
+      - name: Run Tests
+        run: mvn -B test
+
+  docker:
+    name: Build and Deploy Spring Boot App
     runs-on: ubuntu-latest
-
+    needs: test
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 11 and Maven
-        uses: actions/setup-java@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
-          distribution: 'adopt'
-          java-version: '11'
-          maven-version: '3.8.1'
+          java-version: 11
+          distribution: 'corretto'
+          cache: 'maven'
 
-      - name: Configure Git
-        run: |
-          git config --global user.email "smtab142790@gmail.com"
-          git config --global user.name "SmtOzcelik"
-
-      - name: Download ExtentReports
-        uses: actions/download-artifact@v2
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
         with:
-          name: extent-reports
-          path: raporlar
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
 
-      - name: Publish to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@4.1.6
+      - name: Build App
+        run: mvn -B package --file pom.xml -DskipTests
+
+      - name: Generate Extent Reports
+        run: mvn site
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          GITHUB_TOKEN: ${{ secrets.TOKENN }}
-          BRANCH: gh-pages
-          FOLDER: raporlar
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest
