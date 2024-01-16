@@ -66,6 +66,6 @@ jobs:
       - name: Publish to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.6
         with:
-          GITHUB_TOKEN: ${{ secrets.REPORT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKENN }}
           BRANCH: gh-pages
           FOLDER: raporlar
