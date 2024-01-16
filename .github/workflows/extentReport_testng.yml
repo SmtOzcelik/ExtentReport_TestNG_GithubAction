@@ -70,6 +70,7 @@ jobs:
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
+        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest . -f path/to/Dockerfile
         with:
           context: .
           dockerfile: Dockerfile
