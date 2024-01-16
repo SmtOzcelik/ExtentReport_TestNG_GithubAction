@@ -75,5 +75,5 @@ jobs:
           dockerfile: Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest
-          file: ./path/to/Dockerfile
+          file: ./Dockerfile
 
