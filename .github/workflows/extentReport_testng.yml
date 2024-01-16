@@ -1,4 +1,4 @@
-name: extent-report-java11
+name: Java CI with ExtentReports
 
 on:
   push:
@@ -13,28 +13,59 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 11 and Maven
         uses: actions/setup-java@v2
         with:
+          distribution: 'adopt'
           java-version: '11'
+          maven-version: '3.8.1'
 
-      - name: Run Tests
-        run: mvn clean test
+      - name: Configure Git
+        run: |
+          git config --global user.email "smtab142790@gmail.com"
+          git config --global user.name "SmtOzcelik"
 
-      - name: Generate Extent Report
-        run: mvn site
+      - name: Build with Maven
+        run: mvn -B clean install
 
-  deploy:
-    runs-on: ubuntu-latest
+      - name: Run Tests and Generate ExtentReports
+        run: mvn test
 
+      - name: Archive ExtentReports
+        uses: actions/upload-artifact@v2
+        with:
+          name: extent-reports
+          path: raporlar
+
+  publish:
     needs: build
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Set up JDK 11 and Maven
+        uses: actions/setup-java@v2
         with:
-          github_token: ${{ secrets.TOKENN }}
-          publish_dir: ./target/site
+          distribution: 'adopt'
+          java-version: '11'
+          maven-version: '3.8.1'
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "smtab142790@gmail.com"
+          git config --global user.name "SmtOzcelik"
+
+      - name: Download ExtentReports
+        uses: actions/download-artifact@v2
+        with:
+          name: extent-reports
+          path: raporlar
+
+      - name: Publish to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.6
+        with:
+          GITHUB_TOKEN: ${{ secrets.TOKENN }}
+          BRANCH: gh-pages
+          FOLDER: raporlar
