@@ -69,6 +69,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and Push Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/githubactionpushed:latest
+      
