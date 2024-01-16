@@ -1,0 +1,71 @@
+name: Java CI with ExtentReports
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11 and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          maven-version: '3.8.1'
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "smtab142790@gmail.com"
+          git config --global user.name "SmtOzcelik"
+
+      - name: Build with Maven
+        run: mvn -B clean install
+
+      - name: Run Tests and Generate ExtentReports
+        run: mvn test
+
+      - name: Archive ExtentReports
+        uses: actions/upload-artifact@v2
+        with:
+          name: extent-reports
+          path: raporlar
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11 and Maven
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          maven-version: '3.8.1'
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "smtab142790@gmail.com"
+          git config --global user.name "SmtOzcelik"
+
+      - name: Download ExtentReports
+        uses: actions/download-artifact@v2
+        with:
+          name: extent-reports
+          path: raporlar
+
+      - name: Publish to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.6
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: raporlar
